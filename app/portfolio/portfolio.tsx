@@ -29,14 +29,12 @@ const skills = [
   { name: 'Flask', icon: SiFlask, color: '#000000' },
   { name: 'FastAPI', icon: SiFastapi, color: '#009688' },
   { name: 'Jinja', icon: SiJinja, color: '#B41717' },
-  // { name: 'Firebase', icon: SiFirebase, color: '#FFCA28' },
   { name: 'Google Analytics', icon: SiGoogleanalytics, color: '#E37400' },
   { name: 'AWS S3 & EC2', icon: FaAws, color: '#FF9900' },
   { name: 'Nginx', icon: SiNginx, color: '#009639' },
   { name: 'Gunicorn',   icon: SiGunicorn, color: '#499848' },
   { name: 'Git', icon: SiGit, color: '#F05032' },
   { name: 'Jira', icon: SiJira, color: '#0052CC' },
-  // { name: 'WordPress', icon: SiWordpress, color: '#21759B' },
 ]
 
 const projects = [
