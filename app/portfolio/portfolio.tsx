@@ -94,7 +94,7 @@ export function PortfolioComponent() {
       for (let i = sections.length - 1; i >= 0; i--) {
         const section = document.getElementById(sections[i])
         if (section) {
-          const { offsetTop, offsetHeight } = section
+          const { offsetTop } = section
           if (window.scrollY >= offsetTop - 100) {
             setActiveSection(sections[i])
             break
@@ -142,7 +142,7 @@ export function PortfolioComponent() {
     setAutoScrollX(-wrappedScroll)
   })
 
-  const [formState, handleSubmit] = useForm("xdoqynqr");
+  const [formState, handleSubmit] = useForm(process.env.NEXT_PUBLIC_FORMSPREE_ID);
   const [hoveredItem, setHoveredItem] = useState<string | null>(null);
   const navRef = useRef<HTMLDivElement>(null);
 
