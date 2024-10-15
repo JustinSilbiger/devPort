@@ -4,10 +4,11 @@ import React, { useState, useEffect, useRef } from 'react'
 import { motion, useAnimation, useScroll, useTransform, AnimatePresence, useSpring, useAnimationFrame } from 'framer-motion'
 import { ChevronDown, ExternalLink } from 'lucide-react'
 import { Inter } from 'next/font/google'
-import { SiJavascript, SiTypescript, SiReact, SiNextdotjs, SiPython, SiDjango, SiPostgresql, SiMongodb, SiSwift, SiFastapi, SiJquery, SiGit, SiTailwindcss, SiHtml5, SiCss3, SiBootstrap, SiJira, SiFlask, SiJinja, SiGoogleanalytics, SiFirebase, SiGunicorn, SiNginx, SiWordpress } from 'react-icons/si'
+import { SiJavascript, SiTypescript, SiReact, SiNextdotjs, SiPython, SiDjango, SiPostgresql, SiFastapi, SiJquery, SiGit, SiTailwindcss, SiHtml5, SiCss3, SiBootstrap, SiJira, SiFlask, SiJinja, SiGoogleanalytics, SiGunicorn, SiNginx } from 'react-icons/si'
 import { FaNodeJs, FaAws, FaGithub, FaLinkedin } from 'react-icons/fa'
-import { useForm, ValidationError } from '@formspree/react';
+import { useForm } from '@formspree/react';
 import { ScrollArea } from '@/components/ui/scroll-area'
+import Image from 'next/image'
 
 const inter = Inter({ subsets: ['latin'] })
 
@@ -43,14 +44,14 @@ const projects = [
     title: "Tasky",
     description: "Tasky is a full-stack task management platform for organizing your daily tasks and boosting productivity.",
     link: "http://taskyfe.s3-website-us-east-1.amazonaws.com/login",
-    image: "assets/tasky.png",
+    image: "/assets/tasky.png", // Added leading slash
     tags: ['React', 'Vite', 'Bootstrap', 'Django', 'SQLite', 'PyJWT', 'AWS S3/EC2', 'Demo'],
   },
   {
     title: "Silbiger Family Tree",
     description: "The Silbiger Family Tree is a database of over 1,200 family members. It is designed to document the genealogy of the Silbiger family.",
     link: "https://silbiger.onrender.com/",
-    image: "assets/silbiger.gif",
+    image: "/assets/silbiger.gif", // Added leading slash
     tags: ['Node.js', 'PostgreSQL', 'Bootstrap', 'JWT','⚠️⏳ Render Free Tier' ],
     
   },
@@ -58,7 +59,7 @@ const projects = [
     title: "JTimes.org",
     description: "The JTimes web app builds on the Hebcal API by incorporating a current location feature to display information about upcoming holidays.",
     link: "https://shabbat-shalom.github.io/",
-    image: "assets/jtimes.png",
+    image: "/assets/jtimes.png", // Added leading slash
     tags: ['HTML', 'CSS', 'JavaScript', 'Geolocation', 'Hebcal API', 'GitHub Pages'],
   },
 ];
@@ -67,28 +68,15 @@ export function PortfolioComponent() {
   const [activeSection, setActiveSection] = useState('home')
   const controls = useAnimation()
   const { scrollYProgress: globalScrollProgress } = useScroll()
-  const headerRef = useRef(null)
 
-  const headerOpacity = useTransform(globalScrollProgress, [0, 0.1], [1, 0.8])
-  const headerBackground = useTransform(
-    globalScrollProgress,
-    [0, 0.1],
-    ['rgba(245, 245, 247, 0)', 'rgba(245, 245, 247, 0.8)']
-  )
-  const headerPadding = useTransform(globalScrollProgress, [0, 0.1], [8, 16])
-  const headerBorderRadius = useTransform(globalScrollProgress, [0, 0.1], [9999, 0])
-  const headerWidth = useTransform(globalScrollProgress, [0, 0.1], ['auto', '100%'])
-  const headerPosition = useTransform(globalScrollProgress, (pos) => pos > 0.1 ? 'fixed' : 'absolute')
-
-  const isScrolled = useTransform(globalScrollProgress, [0, 0.1], [0, 1])
   const [showFullWidthNav, setShowFullWidthNav] = useState(false)
 
   useEffect(() => {
-    const unsubscribe = isScrolled.onChange(v => {
+    const unsubscribe = globalScrollProgress.onChange(v => {
       setShowFullWidthNav(v >= 0.5)
     })
     return () => unsubscribe()
-  }, [isScrolled])
+  }, [globalScrollProgress])
 
   useEffect(() => {
     controls.start({ opacity: 1, y: 0 })
@@ -456,11 +444,15 @@ export function PortfolioComponent() {
                   }}
                   whileHover={{ y: -10 }}
                 >
-                  <img 
-                    src={project.image} 
-                    alt={project.title} 
-                    className="w-full h-48 sm:h-64 object-cover object-center"
-                  />
+                  <div className="relative w-full h-48"> {/* Set a fixed height */}
+                    <Image 
+                      src={project.image} 
+                      alt={project.title} 
+                      layout="fill"
+                      objectFit="cover"
+                      className="rounded-t-2xl"
+                    />
+                  </div>
                   <div className="p-4 sm:p-6 flex flex-col flex-grow">
                     <h3 className="font-bold text-xl sm:text-2xl md:text-3xl mb-3">{project.title}</h3>
                     <div className="flex flex-wrap gap-2 mb-3">
