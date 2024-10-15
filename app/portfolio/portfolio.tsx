@@ -6,7 +6,6 @@ import { ChevronDown, ExternalLink } from 'lucide-react'
 import { Inter } from 'next/font/google'
 import { SiJavascript, SiTypescript, SiReact, SiNextdotjs, SiPython, SiDjango, SiPostgresql, SiFastapi, SiJquery, SiGit, SiTailwindcss, SiHtml5, SiCss3, SiBootstrap, SiJira, SiFlask, SiJinja, SiGoogleanalytics, SiGunicorn, SiNginx } from 'react-icons/si'
 import { FaNodeJs, FaAws, FaGithub, FaLinkedin } from 'react-icons/fa'
-import { useForm } from '@formspree/react';
 import { ScrollArea } from '@/components/ui/scroll-area'
 import Image from 'next/image'
 
@@ -140,7 +139,10 @@ export function PortfolioComponent() {
     setAutoScrollX(-wrappedScroll)
   })
 
-  const [formState, handleSubmit] = useForm(process.env.NEXT_PUBLIC_FORMSPREE_ID);
+  // Add a state to manage form submission
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isSubmitted, setIsSubmitted] = useState(false);
+
   const [hoveredItem, setHoveredItem] = useState<string | null>(null);
   const navRef = useRef<HTMLDivElement>(null);
 
@@ -551,7 +553,7 @@ export function PortfolioComponent() {
               Get in Touch
             </motion.h2>
             <div className="max-w-3xl mx-auto px-4">
-              {formState.succeeded ? (
+              {isSubmitted ? (
                 <motion.p
                   className="text-xl text-center text-green-600"
                   initial={{ opacity: 0, y: 50 }}
@@ -564,13 +566,37 @@ export function PortfolioComponent() {
                 <motion.form
                   action="https://formspree.io/f/xdoqynqr"
                   method="POST"
-                  onSubmit={handleSubmit}
+                  onSubmit={async (e) => {
+                    e.preventDefault();
+                    setIsSubmitting(true);
+                    try {
+                      const form = e.currentTarget;
+                      const response = await fetch(form.action, {
+                        method: form.method,
+                        body: new FormData(form),
+                        headers: {
+                          'Accept': 'application/json'
+                        }
+                      });
+                      if (response.ok) {
+                        setIsSubmitted(true);
+                      } else {
+                        throw new Error('Form submission failed');
+                      }
+                    } catch (error) {
+                      console.error('Error submitting form:', error);
+                      alert('There was an error submitting the form. Please try again.');
+                    } finally {
+                      setIsSubmitting(false);
+                    }
+                  }}
                   className="space-y-4 sm:space-y-6"
                   initial={{ opacity: 0, y: 50 }}
                   whileInView={{ opacity: 1, y: 0 }}
                   transition={{ duration: 0.5 }}
                   viewport={{ once: true }}
                 >
+                  {/* Name input */}
                   <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
                     <label htmlFor="name" className="block mb-2 font-medium">Name</label>
                     <input
@@ -581,6 +607,8 @@ export function PortfolioComponent() {
                       required
                     />
                   </motion.div>
+                  
+                  {/* Email input */}
                   <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
                     <label htmlFor="email" className="block mb-2 font-medium">Your email:</label>
                     <input
@@ -591,6 +619,8 @@ export function PortfolioComponent() {
                       required
                     />
                   </motion.div>
+                  
+                  {/* Message textarea */}
                   <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
                     <label htmlFor="message" className="block mb-2 font-medium">Your message:</label>
                     <textarea
@@ -601,14 +631,16 @@ export function PortfolioComponent() {
                       required
                     />
                   </motion.div>
+                  
+                  {/* Submit button */}
                   <motion.button
                     type="submit"
-                    disabled={formState.submitting}
+                    disabled={isSubmitting}
                     className="w-full text-lg font-semibold py-3 px-8 rounded-lg bg-gradient-to-r from-blue-600 to-purple-600 text-white disabled:opacity-50"
                     whileHover={{ scale: 1.05, boxShadow: '0 0 15px rgba(0, 0, 0, 0.2)' }}
                     whileTap={{ scale: 0.95 }}
                   >
-                    {formState.submitting ? 'Sending...' : 'Send Message'}
+                    {isSubmitting ? 'Sending...' : 'Send Message'}
                   </motion.button>
                 </motion.form>
               )}
