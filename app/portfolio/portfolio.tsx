@@ -342,7 +342,7 @@ export function PortfolioComponent() {
                       transition={{ duration: 0.5, delay: 0.2 }}
                       viewport={{ once: true }}
                     >
-                      Creating this portfolio has shown me just how powerful software can be in creating solutions to real-world problems. I love the challenge of learning something new with each project, and I'm excited to keep building impactful solutions that drive positive change.
+                      Creating this portfolio has shown me just how powerful software can be in creating solutions to real-world problems. I love the challenge of learning something new with each project, and I&#39;m excited to keep building impactful solutions that drive positive change.
                     </motion.p>
                   </motion.div>
                   <div className="flex flex-col sm:flex-row gap-4 mt-6">
@@ -625,7 +625,7 @@ export function PortfolioComponent() {
               transition={{ duration: 0.5 }}
               viewport={{ once: true }}
             >
-              Let's Connect
+              Let&#39;s Connect
             </motion.h2>
             <motion.div
               className="flex justify-center space-x-6 mb-8"
