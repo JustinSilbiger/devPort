@@ -38,6 +38,13 @@ const skills = [
 
 const projects = [
   {
+    "title": "ADCO Builders",
+    "description": "ADCO Builders is a modern, responsive website designed to attract new clients by showcasing a construction and home improvement company's services, expertise, and project portfolio. The website emphasizes user-friendly navigation, performance, and compelling visuals to engage potential customers and drive inquiries.",
+    "link": "https://adcobuilders.vercel.app/",
+    "image": "/assets/adco-builders.jpg", // Placeholder image path; update as needed
+    "tags": ["Next.js", "Tailwind CSS", "Framer Motion", "Responsive", "SEO", "CI/CD"]
+  },
+  {
     title: "Tasky",
     description: "Tasky is a full-stack task management platform for organizing your daily tasks and boosting productivity.",
     link: "http://taskyfe.s3-website-us-east-1.amazonaws.com/login",
