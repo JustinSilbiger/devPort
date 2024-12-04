@@ -16,28 +16,98 @@ interface BlogPost {
 }
 
 const blogPosts: BlogPost[] = [
-  // {
-  //   id: 1,
-  //   title: "Minimalist Design 1",
-  //   excerpt: "Exploring the beauty of simplicity in design and its impact on user experience.",
-  //   content: "Minimalism in design is more than just a visual style; it's a philosophy that emphasizes simplicity and functionality. By stripping away unnecessary elements, minimalist design creates a clean, focused user experience that can significantly improve usability and aesthetic appeal. This approach not only reduces cognitive load for users but also often results in faster load times and better performance, especially on mobile devices. However, achieving effective minimalism requires careful consideration of essential elements and user needs, balancing simplicity with functionality to create designs that are both beautiful and practical.",
-  //   date: "May 1, 2023"
-  // },
-  // {
-  //   id: 2,
-  //   title: "Minimalist Design 2",
-  //   excerpt: "Delving into the principles of minimalism and their application in modern web design.",
-  //   content: "The principles of minimalism in web design go beyond just using white space and simple color schemes. It involves a strategic approach to content hierarchy, typography, and user flow. By prioritizing essential information and features, minimalist web design can guide users more effectively through a site or application. This approach often leads to improved user engagement and conversion rates. However, it's crucial to strike a balance between minimalism and providing sufficient information and functionality. Successful minimalist design requires a deep understanding of user needs and behaviors, as well as rigorous testing and iteration to ensure that the simplified design truly enhances the user experience.",
-  //   date: "May 15, 2023"
-  // },
-  // {
-  //   id: 3,
-  //   title: "Minimalist Design 3",
-  //   excerpt: "Examining how minimalism influences user interaction and engagement in digital products.",
-  //   content: "Minimalism in digital product design has a profound impact on user interaction and engagement. By reducing visual clutter and focusing on core functionality, minimalist designs can significantly improve user comprehension and task completion rates. This approach often leads to more intuitive interfaces that require less cognitive effort from users, resulting in a more enjoyable and efficient user experience. Moreover, the clean aesthetics of minimalist design can evoke a sense of sophistication and trustworthiness, which can be particularly beneficial for brands aiming to convey professionalism and reliability. However, it's important to note that effective minimalist design doesn't mean sacrificing personality or brand identity. The challenge lies in finding creative ways to incorporate brand elements and character within a minimalist framework.",
-  //   date: "May 30, 2023"
-  // }
+  {
+    id: 1,
+    title: "Day 1: Swift Basics - Variables, Strings, Numbers #100DaysOfSwiftUI",
+    excerpt: "Starting my #100DaysOfSwiftUI journey.",
+    content: `Variables & Constants
+• var = values that can change
+• let = values that stay fixed
+• Swift prefers the let constant by default
+
+\`\`\`swift
+var score = 0       // Can change
+score = 100         // ✅ Works fine
+
+let name = "Justin" // Can't change
+name = "Bob"        // ❌ Won't compile - constants can't be changed
+\`\`\`
+
+Strings (Text)
+• Always use double quotes ("")
+• String interpolation with \\(variableName)
+• It's always a good idea to use camelCase for variable names
+• Multi-line strings use triple quotes
+• Useful methods: .count, .uppercased(), .hasPrefix(), .hasSuffix()
+
+\`\`\`swift
+let text = "Hello!"
+let name = "Justin"
+let greeting = "Hello, \\(name)!"  // String interpolation
+
+let multi = """
+Line 1
+Line 2
+"""
+print(text.count)  // Number of characters
+\`\`\`
+
+Numbers
+• Int: whole numbers 
+• Double: decimals
+• Type safety prevents mixing without explicit conversion
+
+\`\`\`swift
+let integer = 25    // Whole number
+let double = 6.13   // Decimal number
+
+// Need to explicitly convert between types with a cast
+let sum = Double(integer) + double  
+\`\`\`
+
+Tips:
+• Use underscores for readability: 1_000_000
+• Swift is type-safe, so be explicit with number types
+
+Pretty straightforward start - excited to keep building on this! 💪`,
+    date: "December 2, 2024"
+  }
 ]
+
+const formatContentWithCodeBlocks = (content: string) => {
+  const parts = content.split('```swift')
+  
+  return parts.map((part, index) => {
+    if (index === 0) {
+      return <p key={index} className="min-w-0">{part}</p>
+    }
+    
+    const [code, ...rest] = part.split('```')
+    
+    return (
+      <div key={index} className="min-w-0">
+        <div className="relative group">
+          <pre className="relative rounded-lg bg-zinc-50 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 p-4 overflow-x-auto">
+            <div className="absolute top-3 right-3">
+              <Button
+                variant="secondary"
+                size="sm"
+                className="h-8 px-2 text-xs bg-zinc-200 dark:bg-zinc-800 hover:bg-zinc-300 dark:hover:bg-zinc-700 text-zinc-700 dark:text-zinc-300"
+                onClick={() => navigator.clipboard.writeText(code.trim())}
+              >
+                Copy
+              </Button>
+            </div>
+            <code className="text-sm font-mono text-zinc-800 dark:text-zinc-200 break-words whitespace-pre-wrap">
+              {code.trim()}
+            </code>
+          </pre>
+        </div>
+        {rest.length > 0 && <p className="min-w-0">{rest.join('')}</p>}
+      </div>
+    )
+  })
+}
 
 export function BlogUi() {
   const [expandedPosts, setExpandedPosts] = useState<number[]>([])
@@ -94,61 +164,65 @@ export function BlogUi() {
       </header>
 
       <main className="flex-grow container mx-auto px-4 py-12">
-        <div className="max-w-2xl mx-auto mb-12 text-center">
-          <h2 className="text-4xl font-bold mb-4 bg-clip-text">
-            Sorry,
-          </h2>
-          <p className="text-xl text-muted-foreground">this page is currently under development.</p>
-        </div>
+        
 
-        <div className="grid gap-8 max-w-2xl mx-auto">
+        <div className="grid gap-8 max-w-3xl mx-auto">
           {blogPosts.map((post) => (
-            <Card key={post.id} className="bg-card border-none shadow-lg hover:shadow-xl transition-shadow duration-300">
-              <CardHeader>
-                <CardTitle className="text-2xl font-bold">{post.title}</CardTitle>
+            <Card 
+              key={post.id} 
+              className="bg-card border border-zinc-200/50 dark:border-zinc-800/50 shadow-sm hover:shadow-md transition-all duration-300"
+            >
+              <CardHeader className="space-y-4 border-b border-zinc-200/50 dark:border-zinc-800/50">
+                <div className="space-y-2">
+                  <CardTitle className="text-2xl font-bold tracking-tight">{post.title}</CardTitle>
+                  <time className="text-sm text-muted-foreground">
+                    {post.date}
+                  </time>
+                </div>
               </CardHeader>
-              <CardContent>
-                <p className="text-muted-foreground mb-4">
-                  {expandedPosts.includes(post.id) ? post.content : post.excerpt}
-                </p>
-                <div className="flex items-center justify-between">
-                  <span className="text-sm text-muted-foreground">{post.date}</span>
-                  <Button 
-                    variant="ghost" 
-                    className="hover:bg-primary hover:text-primary-foreground transition-colors duration-300"
-                    onClick={() => togglePostExpansion(post.id)}
-                  >
-                    {expandedPosts.includes(post.id) ? (
-                      <>
-                        <ChevronUp className="h-4 w-4 mr-2" />
-                        Read Less
-                      </>
-                    ) : (
-                      <>
-                        <ChevronDown className="h-4 w-4 mr-2" />
-                        Read More
-                      </>
-                    )}
-                  </Button>
+              <CardContent className="pt-6">
+                <div className="space-y-4">
+                  <div className={`prose prose-gray dark:prose-invert max-w-none ${
+                    expandedPosts.includes(post.id) 
+                      ? 'whitespace-pre-line px-2 sm:px-4' 
+                      : 'line-clamp-3 text-center'
+                  } prose-pre:bg-muted prose-pre:border prose-pre:border-border/40 prose-pre:rounded-lg prose-pre:max-w-[calc(100vw-2rem)] sm:prose-pre:max-w-none`}>
+                    {expandedPosts.includes(post.id) 
+                      ? (
+                        <div className="overflow-x-auto -mx-2 sm:-mx-4">
+                          <div className="min-w-0">
+                            {formatContentWithCodeBlocks(post.content)}
+                          </div>
+                        </div>
+                      ) 
+                      : post.excerpt}
+                  </div>
+                  <div className="flex justify-center pt-4">
+                    <Button 
+                      variant="ghost" 
+                      className="hover:bg-primary hover:text-primary-foreground transition-colors duration-300"
+                      onClick={() => togglePostExpansion(post.id)}
+                    >
+                      {expandedPosts.includes(post.id) ? (
+                        <>
+                          <ChevronUp className="h-4 w-4 mr-2" />
+                          <span className="text-sm font-medium">Read Less</span>
+                        </>
+                      ) : (
+                        <>
+                          <ChevronDown className="h-4 w-4 mr-2" />
+                          <span className="text-sm font-medium">Read More</span>
+                        </>
+                      )}
+                    </Button>
+                  </div>
                 </div>
               </CardContent>
             </Card>
           ))}
         </div>
 
-        <div className="mt-12 text-center">
-          <Link href="/" passHref>
-            <Button
-              variant="outline"
-              size="lg"
-              className="group relative overflow-hidden rounded-full hover:bg-primary hover:text-primary-foreground transition-all duration-300"
-            >
-              <span className="absolute inset-0 w-0 bg-primary transition-all duration-300 ease-out group-hover:w-full"></span>
-              <Home className="h-5 w-5 mr-2 relative z-10 transition-transform group-hover:rotate-12" />
-              <span className="relative z-10">Back to Home</span>
-            </Button>
-          </Link>
-        </div>
+      
       </main>
 
       <footer className="border-t border-border/40 mt-auto py-6 text-center text-muted-foreground">
