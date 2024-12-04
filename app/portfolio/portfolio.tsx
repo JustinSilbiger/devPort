@@ -8,6 +8,7 @@ import { SiJavascript, SiTypescript, SiReact, SiNextdotjs, SiPython, SiDjango, S
 import { FaNodeJs, FaAws, FaGithub, FaLinkedin } from 'react-icons/fa'
 import { ScrollArea } from '@/components/ui/scroll-area'
 import Image from 'next/image'
+import { useForm, ValidationError } from '@formspree/react';
 
 const inter = Inter({ subsets: ['latin'] })
 
@@ -560,97 +561,7 @@ export function PortfolioComponent() {
               Get in Touch
             </motion.h2>
             <div className="max-w-3xl mx-auto px-4">
-              {isSubmitted ? (
-                <motion.p
-                  className="text-xl text-center text-green-600"
-                  initial={{ opacity: 0, y: 50 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ duration: 0.5 }}
-                >
-                  📨 Thanks for reaching out! I'll get back to you soon.
-                </motion.p>
-              ) : (
-                <motion.form
-                  action="https://formspree.io/f/xdoqynqr"
-                  method="POST"
-                  onSubmit={async (e) => {
-                    e.preventDefault();
-                    setIsSubmitting(true);
-                    try {
-                      const form = e.currentTarget;
-                      const response = await fetch(form.action, {
-                        method: form.method,
-                        body: new FormData(form),
-                        headers: {
-                          'Accept': 'application/json'
-                        }
-                      });
-                      if (response.ok) {
-                        setIsSubmitted(true);
-                      } else {
-                        throw new Error('Form submission failed');
-                      }
-                    } catch (error) {
-                      console.error('Error submitting form:', error);
-                      alert('There was an error submitting the form. Please try again.');
-                    } finally {
-                      setIsSubmitting(false);
-                    }
-                  }}
-                  className="space-y-4 sm:space-y-6"
-                  initial={{ opacity: 0, y: 50 }}
-                  whileInView={{ opacity: 1, y: 0 }}
-                  transition={{ duration: 0.5 }}
-                  viewport={{ once: true }}
-                >
-                  {/* Name input */}
-                  <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
-                    <label htmlFor="name" className="block mb-2 font-medium">Name</label>
-                    <input
-                      id="name"
-                      type="text" 
-                      name="name"
-                      className="w-full px-4 py-3 rounded-lg border border-[#d2d2d7] focus:outline-none focus:border-blue-600 transition-colors duration-300 bg-gray-50 text-gray-900"
-                      required
-                    />
-                  </motion.div>
-                  
-                  {/* Email input */}
-                  <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
-                    <label htmlFor="email" className="block mb-2 font-medium">Your email:</label>
-                    <input
-                      id="email"
-                      type="email" 
-                      name="email"
-                      className="w-full px-4 py-3 rounded-lg border border-[#d2d2d7] focus:outline-none focus:border-blue-600 transition-colors duration-300 bg-gray-50 text-gray-900"
-                      required
-                    />
-                  </motion.div>
-                  
-                  {/* Message textarea */}
-                  <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
-                    <label htmlFor="message" className="block mb-2 font-medium">Your message:</label>
-                    <textarea
-                      id="message"
-                      name="message"
-                      rows={4}
-                      className="w-full px-4 py-3 rounded-lg border border-[#d2d2d7] focus:outline-none focus:border-blue-600 transition-colors duration-300 bg-gray-50 text-gray-900"
-                      required
-                    />
-                  </motion.div>
-                  
-                  {/* Submit button */}
-                  <motion.button
-                    type="submit"
-                    disabled={isSubmitting}
-                    className="w-full text-lg font-semibold py-3 px-8 rounded-lg bg-gradient-to-r from-blue-600 to-purple-600 text-white disabled:opacity-50"
-                    whileHover={{ scale: 1.05, boxShadow: '0 0 15px rgba(0, 0, 0, 0.2)' }}
-                    whileTap={{ scale: 0.95 }}
-                  >
-                    {isSubmitting ? 'Sending...' : 'Send Message'}
-                  </motion.button>
-                </motion.form>
-              )}
+              <ContactForm />
             </div>
           </div>
         </section>
@@ -736,3 +647,81 @@ export function PortfolioComponent() {
     return item ? item.offsetLeft : 0;
   }
 }
+
+const ContactForm = () => {
+  const [state, handleSubmit] = useForm("xdoqynqr");
+
+  if (state.succeeded) {
+    return (
+      <motion.p
+        className="text-xl text-center text-green-600"
+        initial={{ opacity: 0, y: 50 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.5 }}
+      >
+        📨 Thanks for reaching out! I'll get back to you soon.
+      </motion.p>
+    );
+  }
+
+  return (
+    <motion.form
+      onSubmit={handleSubmit}
+      className="space-y-4 sm:space-y-6"
+      initial={{ opacity: 0, y: 50 }}
+      whileInView={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.5 }}
+      viewport={{ once: true }}
+    >
+      {/* Name input */}
+      <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
+        <label htmlFor="name" className="block mb-2 font-medium">Name</label>
+        <input
+          id="name"
+          type="text" 
+          name="name"
+          className="w-full px-4 py-3 rounded-lg border border-[#d2d2d7] focus:outline-none focus:border-blue-600 transition-colors duration-300 bg-gray-50 text-gray-900"
+          required
+        />
+        <ValidationError prefix="Name" field="name" errors={state.errors} className="text-red-500 text-sm mt-1" />
+      </motion.div>
+      
+      {/* Email input */}
+      <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
+        <label htmlFor="email" className="block mb-2 font-medium">Email Address</label>
+        <input
+          id="email"
+          type="email" 
+          name="_replyto"
+          className="w-full px-4 py-3 rounded-lg border border-[#d2d2d7] focus:outline-none focus:border-blue-600 transition-colors duration-300 bg-gray-50 text-gray-900"
+          required
+        />
+        <ValidationError prefix="Email" field="_replyto" errors={state.errors} className="text-red-500 text-sm mt-1" />
+      </motion.div>
+      
+      {/* Message textarea */}
+      <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
+        <label htmlFor="message" className="block mb-2 font-medium">Message</label>
+        <textarea
+          id="message"
+          name="message"
+          rows={4}
+          className="w-full px-4 py-3 rounded-lg border border-[#d2d2d7] focus:outline-none focus:border-blue-600 transition-colors duration-300 bg-gray-50 text-gray-900"
+          required
+        />
+        <ValidationError prefix="Message" field="message" errors={state.errors} className="text-red-500 text-sm mt-1" />
+      </motion.div>
+      
+      {/* Submit button */}
+      <motion.button
+        type="submit"
+        disabled={state.submitting}
+        className="w-full text-lg font-semibold py-3 px-8 rounded-lg bg-gradient-to-r from-blue-600 to-purple-600 text-white disabled:opacity-50"
+        whileHover={{ scale: 1.05, boxShadow: '0 0 15px rgba(0, 0, 0, 0.2)' }}
+        whileTap={{ scale: 0.95 }}
+      >
+        {state.submitting ? 'Sending...' : 'Send Message'}
+      </motion.button>
+    </motion.form>
+  );
+};
