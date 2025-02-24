@@ -55,7 +55,17 @@ const config: Config = {
   			lg: 'var(--radius)',
   			md: 'calc(var(--radius) - 2px)',
   			sm: 'calc(var(--radius) - 4px)'
-  		}
+  		},
+  		fontFamily: {
+  			sans: ['var(--font-outfit)', 'system-ui', 'sans-serif'],
+  			display: ['var(--font-space-grotesk)', 'system-ui', 'sans-serif'],
+  			body: ['var(--font-outfit)', 'system-ui', 'sans-serif'],
+  			accent: ['var(--font-manrope)', 'system-ui', 'sans-serif'],
+  		},
+  		backgroundImage: {
+  			'gradient-radial': 'radial-gradient(var(--tw-gradient-stops))',
+  			'gradient-conic': 'conic-gradient(from 180deg at 50% 50%, var(--tw-gradient-stops))',
+  		},
   	}
   },
   plugins: [
