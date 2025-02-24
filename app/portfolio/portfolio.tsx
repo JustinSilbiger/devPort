@@ -1,7 +1,7 @@
 'use client'
 
-import React, { useState, useEffect, useRef } from 'react'
-import { motion, useAnimation, useScroll, useTransform, AnimatePresence, useSpring, useAnimationFrame, useInView } from 'framer-motion'
+import React, { useState, useEffect, useRef, useCallback } from 'react'
+import { motion, useAnimation, useScroll, useTransform, AnimatePresence, useSpring, useAnimationFrame, useInView, MotionStyle, Variants } from 'framer-motion'
 import { ChevronDown, ExternalLink, Menu, X, Home, User, Code2, Briefcase, Mail } from 'lucide-react'
 import { Inter, Outfit, Space_Grotesk, Manrope } from 'next/font/google'
 import { SiJavascript, SiTypescript, SiReact, SiNextdotjs, SiPython, SiDjango, SiPostgresql, SiFastapi, SiExpress, SiGit, SiTailwindcss, SiHtml5, SiCss3, SiBootstrap, SiJira, SiFlask, SiGoogleanalytics, SiVercel, SiMui, SiVite, SiFramer, SiRadixui, SiJsonwebtokens, SiSqlite, SiRender } from 'react-icons/si'
@@ -11,6 +11,7 @@ import Image from 'next/image'
 import { useForm, ValidationError } from '@formspree/react';
 import Link from 'next/link'
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet"
+import debounce from 'lodash/debounce'
 
 const inter = Inter({ subsets: ['latin'] })
 
@@ -51,10 +52,10 @@ const skills = [
 ]
 
 const blurDataURLs = {
-  'adco-builders': 'data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/4gHYSUNDX1BST0ZJTEUAAQEAAAHIAAAAAAQwAABtbnRyUkdCIFhZWiAH4AABAAEAAAAAAABhY3NwAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAQAA9tYAAQAAAADTLQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAlkZXNjAAAA8AAAACRyWFlaAAABFAAAABRnWFlaAAABKAAAABRiWFlaAAABPAAAABR3dHB0AAABUAAAABRyVFJDAAABZAAAAChnVFJDAAABZAAAAChiVFJDAAABZAAAAChjcHJ0AAABjAAAADxtbHVjAAAAAAAAAAEAAAAMZW5VUwAAAAgAAAAcAHMAUgBHAEJYWVogAAAAAAAAb6IAADj1AAADkFhZWiAAAAAAAABimQAAt4UAABjaWFlaIAAAAAAAACSgAAAPhAAAts9YWVogAAAAAAAA9tYAAQAAAADTLXBhcmEAAAAAAAQAAAACZmYAAPKnAAANWQAAE9AAAApbAAAAAAAAAABtbHVjAAAAAAAAAAEAAAAMZW5VUwAAACAAAAAcAEcAbwBvAGcAbABlACAASQBuAGMALgAgADIAMAAxADb/2wBDABQODxIPDRQSEBIXFRQdHx4eHRoaHSQtJSEkMjU1LS0yMi4qLjgyPjA+OjU8PkM5QklCR1JTUzU+XX5mgmRmcnL/2wBDARUXFx4aHR4eHHJCLiYucnJycnJycnJycnJycnJycnJycnJycnJycnJycnJycnL/wAARCAAIAAoDASIAAhEBAxEB/8QAFQABAQAAAAAAAAAAAAAAAAAAAAb/xAAUEAEAAAAAAAAAAAAAAAAAAAAA/8QAFQEBAQAAAAAAAAAAAAAAAAAAAAX/xAAUEQEAAAAAAAAAAAAAAAAAAAAA/9oADAMBAAIRAxEAPwCdABmX/9k=',
-  'tasky': 'data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/4gHYSUNDX1BST0ZJTEUAAQEAAAHIAAAAAAQwAABtbnRyUkdCIFhZWiAH4AABAAEAAAAAAABhY3NwAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAQAA9tYAAQAAAADTLQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAlkZXNjAAAA8AAAACRyWFlaAAABFAAAABRnWFlaAAABKAAAABRiWFlaAAABPAAAABR3dHB0AAABUAAAABRyVFJDAAABZAAAAChnVFJDAAABZAAAAChiVFJDAAABZAAAAChjcHJ0AAABjAAAADxtbHVjAAAAAAAAAAEAAAAMZW5VUwAAAAgAAAAcAHMAUgBHAEJYWVogAAAAAAAAb6IAADj1AAADkFhZWiAAAAAAAABimQAAt4UAABjaWFlaIAAAAAAAACSgAAAPhAAAts9YWVogAAAAAAAA9tYAAQAAAADTLXBhcmEAAAAAAAQAAAACZmYAAPKnAAANWQAAE9AAAApbAAAAAAAAAABtbHVjAAAAAAAAAAEAAAAMZW5VUwAAACAAAAAcAEcAbwBvAGcAbABlACAASQBuAGMALgAgADIAMAAxADb/2wBDABQODxIPDRQSEBIXFRQdHx4eHRoaHSQtJSEkMjU1LS0yMi4qLjgyPjA+OjU8PkM5QklCR1JTUzU+XX5mgmRmcnL/2wBDARUXFx4aHR4eHHJCLiYucnJycnJycnJycnJycnJycnJycnJycnJycnJycnJycnL/wAARCAAIAAoDASIAAhEBAxEB/8QAFQABAQAAAAAAAAAAAAAAAAAAAAb/xAAUEAEAAAAAAAAAAAAAAAAAAAAA/8QAFQEBAQAAAAAAAAAAAAAAAAAAAAX/xAAUEQEAAAAAAAAAAAAAAAAAAAAA/9oADAMBAAIRAxEAPwCdABmX/9k=',
-  'silbiger': 'data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/4gHYSUNDX1BST0ZJTEUAAQEAAAHIAAAAAAQwAABtbnRyUkdCIFhZWiAH4AABAAEAAAAAAABhY3NwAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAQAA9tYAAQAAAADTLQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAlkZXNjAAAA8AAAACRyWFlaAAABFAAAABRnWFlaAAABKAAAABRiWFlaAAABPAAAABR3dHB0AAABUAAAABRyVFJDAAABZAAAAChnVFJDAAABZAAAAChiVFJDAAABZAAAAChjcHJ0AAABjAAAADxtbHVjAAAAAAAAAAEAAAAMZW5VUwAAAAgAAAAcAHMAUgBHAEJYWVogAAAAAAAAb6IAADj1AAADkFhZWiAAAAAAAABimQAAt4UAABjaWFlaIAAAAAAAACSgAAAPhAAAts9YWVogAAAAAAAA9tYAAQAAAADTLXBhcmEAAAAAAAQAAAACZmYAAPKnAAANWQAAE9AAAApbAAAAAAAAAABtbHVjAAAAAAAAAAEAAAAMZW5VUwAAACAAAAAcAEcAbwBvAGcAbABlACAASQBuAGMALgAgADIAMAAxADb/2wBDABQODxIPDRQSEBIXFRQdHx4eHRoaHSQtJSEkMjU1LS0yMi4qLjgyPjA+OjU8PkM5QklCR1JTUzU+XX5mgmRmcnL/2wBDARUXFx4aHR4eHHJCLiYucnJycnJycnJycnJycnJycnJycnJycnJycnJycnJycnL/wAARCAAIAAoDASIAAhEBAxEB/8QAFQABAQAAAAAAAAAAAAAAAAAAAAb/xAAUEAEAAAAAAAAAAAAAAAAAAAAA/8QAFQEBAQAAAAAAAAAAAAAAAAAAAAX/xAAUEQEAAAAAAAAAAAAAAAAAAAAA/9oADAMBAAIRAxEAPwCdABmX/9k=',
-  'jtimes': 'data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/4gHYSUNDX1BST0ZJTEUAAQEAAAHIAAAAAAQwAABtbnRyUkdCIFhZWiAH4AABAAEAAAAAAABhY3NwAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAQAA9tYAAQAAAADTLQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAlkZXNjAAAA8AAAACRyWFlaAAABFAAAABRnWFlaAAABKAAAABRiWFlaAAABPAAAABR3dHB0AAABUAAAABRyVFJDAAABZAAAAChnVFJDAAABZAAAAChiVFJDAAABZAAAAChjcHJ0AAABjAAAADxtbHVjAAAAAAAAAAEAAAAMZW5VUwAAAAgAAAAcAHMAUgBHAEJYWVogAAAAAAAAb6IAADj1AAADkFhZWiAAAAAAAABimQAAt4UAABjaWFlaIAAAAAAAACSgAAAPhAAAts9YWVogAAAAAAAA9tYAAQAAAADTLXBhcmEAAAAAAAQAAAACZmYAAPKnAAANWQAAE9AAAApbAAAAAAAAAABtbHVjAAAAAAAAAAEAAAAMZW5VUwAAACAAAAAcAEcAbwBvAGcAbABlACAASQBuAGMALgAgADIAMAAxADb/2wBDABQODxIPDRQSEBIXFRQdHx4eHRoaHSQtJSEkMjU1LS0yMi4qLjgyPjA+OjU8PkM5QklCR1JTUzU+XX5mgmRmcnL/2wBDARUXFx4aHR4eHHJCLiYucnJycnJycnJycnJycnJycnJycnJycnJycnJycnJycnL/wAARCAAIAAoDASIAAhEBAxEB/8QAFQABAQAAAAAAAAAAAAAAAAAAAAb/xAAUEAEAAAAAAAAAAAAAAAAAAAAA/8QAFQEBAQAAAAAAAAAAAAAAAAAAAAX/xAAUEQEAAAAAAAAAAAAAAAAAAAAA/9oADAMBAAIRAxEAPwCdABmX/9k='
+  'adco-builders': 'data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/4gHYSUNDX1BST0ZJTEUAAQEAAAHIAAAAAAQwAABtbnRyUkdCIFhZWiAH4AABAAEAAAAAAABhY3NwAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAQAA9tYAAQAAAADTLQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAlkZXNjAAAA8AAAACRyWFlaAAABFAAAABRnWFlaAAABKAAAABRiWFlaAAABPAAAABR3dHB0AAABUAAAABRyVFJDAAABZAAAAChnVFJDAAABZAAAAChiVFJDAAABZAAAAChjcHJ0AAABjAAAADxtbHVjAAAAAAAAAAEAAAAMZW5VUwAAAAgAAAAcAHMAUgBHAEJYWVogAAAAAAAAb6IAADj1AAADkFhZWiAAAAAAAABimQAAt4UAABjaWFlaIAAAAAAAACSgAAAPhAAAts9YWVogAAAAAAAA9tYAAQAAAADTLXBhcmEAAAAAAAQAAAACZmYAAPKnAAANWQAAE9AAAApbAAAAAAAAAABtbHVjAAAAAAAAAAEAAAAMZW5VUwAAACAAAAAcAEcAbwBvAGcAbABlACAASQBuAGMALgAgADIAMAAxADb/2wBDABQODxIPDRQSEBIXFRQdHx4eHRoaHSQtJSEkMjU1LS0yMi4qLjgyPjA+OjU8PkM5QklCR1JTUzU+XX5mgmRmcnL/2wBDARUXFx4aHR4eHHJCLiYucnJycnJycnJycnJycnJycnJycnJycnJycnJycnL/wAARCAAIAAoDASIAAhEBAxEB/8QAFQABAQAAAAAAAAAAAAAAAAAAAAb/xAAUEAEAAAAAAAAAAAAAAAAAAAAA/8QAFQEBAQAAAAAAAAAAAAAAAAAAAAX/xAAUEQEAAAAAAAAAAAAAAAAAAAAA/9oADAMBAAIRAxEAPwCdABmX/9k=',
+  'tasky': 'data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/4gHYSUNDX1BST0ZJTEUAAQEAAAHIAAAAAAQwAABtbnRyUkdCIFhZWiAH4AABAAEAAAAAAABhY3NwAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAQAA9tYAAQAAAADTLQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAlkZXNjAAAA8AAAACRyWFlaAAABFAAAABRnWFlaAAABKAAAABRiWFlaAAABPAAAABR3dHB0AAABUAAAABRyVFJDAAABZAAAAChnVFJDAAABZAAAAChiVFJDAAABZAAAAChjcHJ0AAABjAAAADxtbHVjAAAAAAAAAAEAAAAMZW5VUwAAAAgAAAAcAHMAUgBHAEJYWVogAAAAAAAAb6IAADj1AAADkFhZWiAAAAAAAABimQAAt4UAABjaWFlaIAAAAAAAACSgAAAPhAAAts9YWVogAAAAAAAA9tYAAQAAAADTLXBhcmEAAAAAAAQAAAACZmYAAPKnAAANWQAAE9AAAApbAAAAAAAAAABtbHVjAAAAAAAAAAEAAAAMZW5VUwAAACAAAAAcAEcAbwBvAGcAbABlACAASQBuAGMALgAgADIAMAAxADb/2wBDABQODxIPDRQSEBIXFRQdHx4eHRoaHSQtJSEkMjU1LS0yMi4qLjgyPjA+OjU8PkM5QklCR1JTUzU+XX5mgmRmcnL/2wBDARUXFx4aHR4eHHJCLiYucnJycnJycnJycnJycnJycnJycnJycnJycnJycnL/wAARCAAIAAoDASIAAhEBAxEB/8QAFQABAQAAAAAAAAAAAAAAAAAAAAb/xAAUEAEAAAAAAAAAAAAAAAAAAAAA/8QAFQEBAQAAAAAAAAAAAAAAAAAAAAX/xAAUEQEAAAAAAAAAAAAAAAAAAAAA/9oADAMBAAIRAxEAPwCdABmX/9k=',
+  'silbiger': 'data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/4gHYSUNDX1BST0ZJTEUAAQEAAAHIAAAAAAQwAABtbnRyUkdCIFhZWiAH4AABAAEAAAAAAABhY3NwAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAQAA9tYAAQAAAADTLQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAlkZXNjAAAA8AAAACRyWFlaAAABFAAAABRnWFlaAAABKAAAABRiWFlaAAABPAAAABR3dHB0AAABUAAAABRyVFJDAAABZAAAAChnVFJDAAABZAAAAChiVFJDAAABZAAAAChjcHJ0AAABjAAAADxtbHVjAAAAAAAAAAEAAAAMZW5VUwAAAAgAAAAcAHMAUgBHAEJYWVogAAAAAAAAb6IAADj1AAADkFhZWiAAAAAAAABimQAAt4UAABjaWFlaIAAAAAAAACSgAAAPhAAAts9YWVogAAAAAAAA9tYAAQAAAADTLXBhcmEAAAAAAAQAAAACZmYAAPKnAAANWQAAE9AAAApbAAAAAAAAAABtbHVjAAAAAAAAAAEAAAAMZW5VUwAAACAAAAAcAEcAbwBvAGcAbABlACAASQBuAGMALgAgADIAMAAxADb/2wBDABQODxIPDRQSEBIXFRQdHx4eHRoaHSQtJSEkMjU1LS0yMi4qLjgyPjA+OjU8PkM5QklCR1JTUzU+XX5mgmRmcnL/2wBDARUXFx4aHR4eHHJCLiYucnJycnJycnJycnJycnJycnJycnJycnJycnJycnL/wAARCAAIAAoDASIAAhEBAxEB/8QAFQABAQAAAAAAAAAAAAAAAAAAAAb/xAAUEAEAAAAAAAAAAAAAAAAAAAAA/8QAFQEBAQAAAAAAAAAAAAAAAAAAAAX/xAAUEQEAAAAAAAAAAAAAAAAAAAAA/9oADAMBAAIRAxEAPwCdABmX/9k=',
+  'jtimes': 'data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/4gHYSUNDX1BST0ZJTEUAAQEAAAHIAAAAAAQwAABtbnRyUkdCIFhZWiAH4AABAAEAAAAAAABhY3NwAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAQAA9tYAAQAAAADTLQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAlkZXNjAAAA8AAAACRyWFlaAAABFAAAABRnWFlaAAABKAAAABRiWFlaAAABPAAAABR3dHB0AAABUAAAABRyVFJDAAABZAAAAChnVFJDAAABZAAAAChiVFJDAAABZAAAAChjcHJ0AAABjAAAADxtbHVjAAAAAAAAAAEAAAAMZW5VUwAAAAgAAAAcAHMAUgBHAEJYWVogAAAAAAAAb6IAADj1AAADkFhZWiAAAAAAAABimQAAt4UAABjaWFlaIAAAAAAAACSgAAAPhAAAts9YWVogAAAAAAAA9tYAAQAAAADTLXBhcmEAAAAAAAQAAAACZmYAAPKnAAANWQAAE9AAAApbAAAAAAAAAABtbHVjAAAAAAAAAAEAAAAMZW5VUwAAACAAAAAcAEcAbwBvAGcAbABlACAASQBuAGMALgAgADIAMAAxADb/2wBDABQODxIPDRQSEBIXFRQdHx4eHRoaHSQtJSEkMjU1LS0yMi4qLjgyPjA+OjU8PkM5QklCR1JTUzU+XX5mgmRmcnL/2wBDARUXFx4aHR4eHHJCLiYucnJycnJycnJycnJycnJycnJycnJycnJycnJycnL/wAARCAAIAAoDASIAAhEBAxEB/8QAFQABAQAAAAAAAAAAAAAAAAAAAAb/xAAUEAEAAAAAAAAAAAAAAAAAAAAA/8QAFQEBAQAAAAAAAAAAAAAAAAAAAAX/xAAUEQEAAAAAAAAAAAAAAAAAAAAA/9oADAMBAAIRAxEAPwCdABmX/9k='
 }
 
 interface Project {
@@ -357,15 +358,42 @@ const ContactForm = () => {
   );
 };
 
-const AnimatedOrb = ({ delay = 0, size = 300, color = "blue", duration = 20 }) => {
+interface AnimatedOrbProps {
+  delay?: number;
+  size?: number;
+  color?: string;
+  duration?: number;
+}
+
+interface MotionStyles extends MotionStyle {
+  width?: number | string;
+  height?: number | string;
+  background?: string;
+  willChange?: string;
+}
+
+const AnimatedOrb = React.memo<AnimatedOrbProps>(({ 
+  delay = 0, 
+  size = 300, 
+  color = "blue", 
+  duration = 20 
+}) => {
+  const style: MotionStyles = {
+    width: size,
+    height: size,
+    background: `radial-gradient(circle at 30% 30%, ${color} 0%, transparent 70%)`,
+    willChange: 'transform',
+  };
+
   return (
     <motion.div
       className="absolute rounded-full mix-blend-multiply filter blur-xl opacity-40"
+      initial={{ scale: 1, x: 0, y: 0, rotate: 0 }}
       animate={{
-        scale: [1, 1.5, 1],
-        x: [0, 150, 0],
-        y: [0, 100, 0],
-        rotate: [0, 180, 0],
+        scale: [1, 1.2, 1],
+        x: [0, 100, 0],
+        y: [0, 50, 0],
+        rotate: [0, 90, 0],
       }}
       transition={{
         duration,
@@ -374,90 +402,45 @@ const AnimatedOrb = ({ delay = 0, size = 300, color = "blue", duration = 20 }) =
         ease: "easeInOut",
         delay,
       }}
-      style={{
-        width: size,
-        height: size,
-        background: `radial-gradient(circle at 30% 30%, ${color} 0%, transparent 70%)`,
-      }}
+      style={style}
     />
-  )
-}
+  );
+});
 
-const AnimatedBackground = () => {
+const AnimatedBackground = React.memo(() => {
+  // Reduce number of orbs and optimize their placement
+  const orbs = [
+    { color: "#4f46e5", size: 600, delay: 0, duration: 25 },
+    { color: "#7c3aed", size: 500, delay: 1, duration: 22 },
+    { color: "#2563eb", size: 550, delay: 0.5, duration: 28 },
+  ];
+
   return (
     <div className="fixed inset-0 z-0 overflow-hidden bg-slate-50">
       <div className="absolute inset-0 bg-gradient-to-b from-white/50 via-transparent to-white/50 opacity-80" />
       
-      {/* Top left orbs */}
+      {/* Strategically placed orbs */}
       <div className="absolute -top-20 -left-20">
-        <AnimatedOrb color="#4f46e5" size={500} delay={0} duration={25} />
-        <AnimatedOrb color="#7c3aed" size={400} delay={2} duration={20} />
+        {orbs.map((orb, index) => (
+          <AnimatedOrb key={`top-left-${index}`} {...orb} />
+        ))}
       </div>
       
-      {/* Top right orbs */}
-      <div className="absolute -top-40 right-0">
-        <AnimatedOrb color="#2563eb" size={600} delay={1} duration={28} />
-        <AnimatedOrb color="#7c3aed" size={450} delay={3} duration={22} />
-      </div>
-      
-      {/* Middle left orbs */}
-      <div className="absolute top-1/3 -left-20">
-        <AnimatedOrb color="#06b6d4" size={550} delay={1.5} duration={24} />
-        <AnimatedOrb color="#3b82f6" size={400} delay={2.5} duration={21} />
-      </div>
-      
-      {/* Middle right orbs */}
-      <div className="absolute top-1/2 right-0">
-        <AnimatedOrb color="#8b5cf6" size={500} delay={2} duration={26} />
-        <AnimatedOrb color="#6366f1" size={450} delay={1} duration={23} />
-      </div>
-      
-      {/* Bottom left orbs */}
-      <div className="absolute bottom-0 -left-20">
-        <AnimatedOrb color="#6366f1" size={600} delay={0.5} duration={27} />
-        <AnimatedOrb color="#3b82f6" size={450} delay={2.5} duration={22} />
-      </div>
-      
-      {/* Bottom right orbs */}
-      <div className="absolute bottom-0 right-0">
-        <AnimatedOrb color="#8b5cf6" size={500} delay={1.5} duration={25} />
-        <AnimatedOrb color="#2563eb" size={400} delay={3} duration={20} />
-      </div>
-
-      {/* Center orbs */}
+      {/* Center orb for consistent effect */}
       <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2">
         <AnimatedOrb color="#4f46e5" size={700} delay={0} duration={30} />
-        <AnimatedOrb color="#7c3aed" size={600} delay={2} duration={25} />
-        <AnimatedOrb color="#06b6d4" size={500} delay={1} duration={28} />
       </div>
 
-      {/* Additional floating orbs */}
-      <div className="absolute top-1/4 left-1/4">
-        <AnimatedOrb color="#3b82f6" size={300} delay={1.5} duration={18} />
-      </div>
-      <div className="absolute top-3/4 right-1/4">
-        <AnimatedOrb color="#6366f1" size={350} delay={2.5} duration={19} />
-      </div>
-
-      {/* Noise texture overlay */}
-      <div 
-        className="absolute inset-0 opacity-[0.02]"
-        style={{ 
-          backgroundImage: 'url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADIAAAAyBAMAAADsEZWCAAAAGFBMVEUAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAANdr6EAAAACHRSTlMzMzMzMzMzM85JBgUAAAAJcEhZcwAADsQAAA7EAZUrDhsAAAAwSURBVDjLY2AY2mAUAwMDQ7szAwPDKgeGUQOGlgHWFgYGhhVhDAwMK8MYRg0YPAYAADLxDQwCKn3lAAAAAElFTkSuQmCC)',
-          backgroundRepeat: 'repeat',
-        }}
-      />
-
-      {/* Enhanced glass effect overlay */}
-      <div className="absolute inset-0 backdrop-blur-[120px]" />
+      {/* Enhanced glass effect overlay with reduced complexity */}
+      <div className="absolute inset-0 backdrop-blur-[80px]" />
       
-      {/* Color tint overlay */}
+      {/* Simplified gradient overlay */}
       <div className="absolute inset-0 bg-gradient-to-br from-blue-500/5 via-purple-500/5 to-indigo-500/5" />
     </div>
-  )
-}
+  );
+});
 
-const ProjectCard: React.FC<ProjectCardProps> = ({ project, index }) => {
+const ProjectCard = React.memo<ProjectCardProps>(({ project, index }) => {
   const ref = useRef<HTMLDivElement>(null);
   const isInView = useInView(ref, { once: true, margin: "100px" });
   
@@ -486,6 +469,8 @@ const ProjectCard: React.FC<ProjectCardProps> = ({ project, index }) => {
               placeholder="blur"
               blurDataURL={project.blurDataURL}
               sizes="(min-width: 1280px) 33vw, (min-width: 768px) 50vw, 100vw"
+              loading={index < 2 ? "eager" : "lazy"}
+              quality={75}
             />
           </div>
           <motion.div 
@@ -535,7 +520,7 @@ const ProjectCard: React.FC<ProjectCardProps> = ({ project, index }) => {
       </Link>
     </motion.div>
   );
-};
+});
 
 const SkillCard: React.FC<SkillCardProps> = ({ skill, index }) => {
   return (
@@ -710,6 +695,35 @@ const navItems: NavItem[] = [
   { name: 'Contact', href: 'contact', icon: '📬' },
 ];
 
+const headerAnimation: Variants = {
+  initial: { y: -100, opacity: 0 },
+  scrolled: { y: 0, opacity: 1 }
+};
+
+const headerContentAnimation: Variants = {
+  initial: { 
+    width: "100%",
+    maxWidth: "48rem",
+    margin: "0 auto",
+    borderRadius: "9999px",
+  },
+  scrolled: { 
+    width: "100%",
+    maxWidth: "100%",
+    margin: "0",
+    borderRadius: "0",
+  }
+};
+
+const buttonHoverAnimation: Variants = {
+  initial: { scale: 1 },
+  hover: { 
+    scale: 1.05,
+    boxShadow: '0 0 15px rgba(0, 0, 0, 0.2)',
+  },
+  tap: { scale: 0.95 }
+};
+
 export function PortfolioComponent() {
   const [activeSection, setActiveSection] = useState('home')
   const [isScrolled, setIsScrolled] = useState(false)
@@ -718,52 +732,50 @@ export function PortfolioComponent() {
   const { scrollYProgress: globalScrollProgress } = useScroll()
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
 
-  useEffect(() => {
-    controls.start({ opacity: 1, y: 0 })
-  }, [controls])
-
-  useEffect(() => {
-    const handleScrollPosition = () => {
+  // Optimized scroll position handler with debounce
+  const handleScrollPosition = useCallback(
+    debounce(() => {
       setIsScrolled(window.scrollY > 100)
-    }
-    window.addEventListener('scroll', handleScrollPosition)
-    return () => window.removeEventListener('scroll', handleScrollPosition)
-  }, [])
+    }, 100),
+    []
+  );
 
-  const handleScroll = () => {
-    const sections = ['home', 'about', 'skills', 'portfolio', 'contact']
-    const scrollPosition = window.scrollY + window.innerHeight
-    const pageHeight = document.documentElement.scrollHeight
-
-    if (scrollPosition >= pageHeight - 50) {
-      // User is at the bottom of the page
-      setActiveSection('contact')
-    } else {
-      for (let i = sections.length - 1; i >= 0; i--) {
-        const section = document.getElementById(sections[i])
-        if (section) {
-          const { offsetTop } = section
-          if (window.scrollY >= offsetTop - 100) {
-            setActiveSection(sections[i])
-            break
+  // Optimized section detection with IntersectionObserver
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting) {
+            setActiveSection(entry.target.id);
           }
-        }
+        });
+      },
+      {
+        rootMargin: '-100px 0px -100px 0px',
+        threshold: 0.3,
       }
-    }
-  }
+    );
+
+    const sections = ['home', 'about', 'skills', 'portfolio', 'contact'];
+    sections.forEach((section) => {
+      const element = document.getElementById(section);
+      if (element) observer.observe(element);
+    });
+
+    return () => observer.disconnect();
+  }, []);
 
   useEffect(() => {
-    window.addEventListener('scroll', handleScroll)
-    handleScroll() // Call once to set initial active section
-    return () => window.removeEventListener('scroll', handleScroll)
-  }, [])
+    window.addEventListener('scroll', handleScrollPosition);
+    return () => window.removeEventListener('scroll', handleScrollPosition);
+  }, [handleScrollPosition]);
 
-  const scrollToSection = (sectionId: string) => {
+  const scrollToSection = useCallback((sectionId: string) => {
     const section = document.getElementById(sectionId);
     if (section) {
       section.scrollIntoView({ behavior: 'smooth', block: 'start' });
     }
-  };
+  }, []);
 
   const skillsRef = useRef(null)
   const [autoScrollX, setAutoScrollX] = useState(0)
@@ -789,12 +801,8 @@ export function PortfolioComponent() {
         {/* Desktop Navigation */}
         <motion.header
           initial={false}
-          animate={{
-            top: isScrolled ? 0 : '1rem',
-            borderRadius: isScrolled ? 0 : '9999px',
-            width: isScrolled ? '100%' : 'calc(100% - 2rem)',
-            margin: isScrolled ? '0' : '0 1rem',
-          }}
+          animate={isScrolled ? "scrolled" : "initial"}
+          variants={headerAnimation}
           transition={{
             type: "spring",
             stiffness: 200,
@@ -803,11 +811,8 @@ export function PortfolioComponent() {
           className="fixed left-0 right-0 z-50 hidden sm:flex justify-center"
         >
           <motion.div 
-            animate={{
-              borderRadius: isScrolled ? 0 : '9999px',
-              maxWidth: isScrolled ? '100%' : 'calc(100vw - 1rem)',
-              margin: isScrolled ? '0' : '0 auto',
-            }}
+            animate={isScrolled ? "scrolled" : "initial"}
+            variants={headerContentAnimation}
             transition={{
               type: "spring",
               stiffness: 200,
